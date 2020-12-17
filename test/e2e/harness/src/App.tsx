@@ -19,9 +19,9 @@ import Protected from './Protected';
 import CustomLogin from './CustomLogin';
 import SessionTokenLogin from './SessionTokenLogin';
 
-const App: React.FC<{ 
-  oktaAuth: OktaAuth, 
-  customLogin: boolean 
+const App: React.FC<{
+  oktaAuth: OktaAuth;
+  customLogin: boolean;
 }> = ({ oktaAuth, customLogin }) => {
   const navigate = useNavigate();
 

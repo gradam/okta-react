@@ -11,21 +11,21 @@
  */
 
 import * as React from 'react';
-import { useHistory } from 'react-router-dom';
 import { toRelativeUrl, AuthSdkError, OktaAuth } from '@okta/okta-auth-js';
-import OktaContext, { OnAuthRequiredFunction } from './OktaContext';
+import OktaContext, { OnAuthRequiredFunction, NavigateFunction } from './OktaContext';
 import OktaError from './OktaError';
 
 const Security: React.FC<{
   oktaAuth: OktaAuth, 
   onAuthRequired?: OnAuthRequiredFunction,
+  navigate?: NavigateFunction,
   children?: React.ReactNode
 } & React.HTMLAttributes<HTMLDivElement>> = ({ 
   oktaAuth, 
   onAuthRequired, 
+  navigate,
   children 
-}) => { 
-  const history = useHistory();
+}) => {
   const [authState, setAuthState] = React.useState(() => {
     if (!oktaAuth) {
       return { 
@@ -46,7 +46,8 @@ const Security: React.FC<{
     // Add default restoreOriginalUri callback
     if (!oktaAuth.options.restoreOriginalUri) {
       oktaAuth.options.restoreOriginalUri = async (_, originalUri) => {
-        history.replace(toRelativeUrl(originalUri, window.location.origin));
+        if (navigate)
+          navigate(toRelativeUrl(originalUri, window.location.origin));
       };
     }
 
@@ -64,7 +65,7 @@ const Security: React.FC<{
     }
 
     return () => oktaAuth.authStateManager.unsubscribe();
-  }, [oktaAuth, history]);
+  }, [oktaAuth]);
 
   if (!oktaAuth) {
     const err = new AuthSdkError('No oktaAuth instance passed to Security Component.');
@@ -75,7 +76,8 @@ const Security: React.FC<{
     <OktaContext.Provider value={{ 
       oktaAuth, 
       authState, 
-      _onAuthRequired: onAuthRequired
+      _onAuthRequired: onAuthRequired,
+      navigate
     }}>
       {children}
     </OktaContext.Provider>
