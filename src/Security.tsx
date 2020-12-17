@@ -46,8 +46,11 @@ const Security: React.FC<{
     // Add default restoreOriginalUri callback
     if (!oktaAuth.options.restoreOriginalUri) {
       oktaAuth.options.restoreOriginalUri = async (_, originalUri) => {
+        const relativUrl = toRelativeUrl(originalUri, window.location.origin);
         if (navigate)
-          navigate(toRelativeUrl(originalUri, window.location.origin));
+          navigate(relativUrl);
+        else
+          location.href = relativUrl;
       };
     }
 
