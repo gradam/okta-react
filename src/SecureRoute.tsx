@@ -13,18 +13,10 @@
 import * as React from 'react';
 import { useOktaAuth, OnAuthRequiredFunction } from './OktaContext';
 import { RouteProps } from 'react-router';
-import { Route, useLocation, matchPath } from 'react-router-dom';
-
-// react-router v6 doesn't export useRouteMatch
-// Issue: https://github.com/ReactTraining/react-router/issues/7133
-// PR: https://github.com/ReactTraining/react-router/pull/7142
-const useRouteMatch = (pattern) => {
-  const location = useLocation();
-  return React.useMemo(() => 
-    pattern.path ? matchPath(pattern, location.pathname) : null, 
-    [location, pattern]
-  );
-};
+import * as RR from 'react-router-dom';
+const { Route } = RR;
+// react-router v6 exports useMatch, react-router v5 exports useRouteMatch
+const useMatch = Object.entries(RR).filter(([k, _v]) => k == 'useMatch' || k == 'useRouteMatch')[0][1];
 
 const SecureRoute: React.FC<{
   onAuthRequired?: OnAuthRequiredFunction;
@@ -33,7 +25,8 @@ const SecureRoute: React.FC<{
   ...routeProps 
 }) => { 
   const { oktaAuth, authState, _onAuthRequired } = useOktaAuth();
-  const match = useRouteMatch(routeProps);
+  const { path, caseSensitive } = routeProps;
+  const match = path ? useMatch.call(null, { path, caseSensitive }) : null;
   const pendingLogin = React.useRef(false);
 
   React.useEffect(() => {
